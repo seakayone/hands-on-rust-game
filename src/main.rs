@@ -1,77 +1,68 @@
 #![warn(clippy::all, clippy::pedantic)]
 
-use std::io::stdin;
+use bracket_lib::terminal::{main_loop, BError, BTerm, BTermBuilder, GameState, VirtualKeyCode};
 
-#[derive(Debug)]
-enum VisitorAction {
-    Accept,
-    AcceptWithNote { note: String },
-    Refuse,
-    Probation,
+struct State {
+    mode: GameMode,
 }
-
-#[derive(Debug)]
-struct Visitor {
-    name: String,
-    action: VisitorAction,
-    age: i8,
-}
-impl Visitor {
-    fn new(name: &str, action: VisitorAction, age: i8) -> Self {
-        Self {
-            name: name.to_string(),
-            action,
-            age,
+impl State {
+    fn new() -> Self {
+        State {
+            mode: GameMode::Menu,
         }
     }
-    fn greet(&self) {
-        match &self.action {
-            VisitorAction::Accept => println!("Welcome to the tree house {}", self.name),
-            VisitorAction::AcceptWithNote { note } => {
-                println!("Welcome to the tree house {}", self.name);
-                println!("{note}");
-                if self.age < 16 {
-                    println!("Do not serve alcohol to {}", self.name);
-                }
+    fn play(&mut self, ctx: &mut BTerm) {
+        self.mode = GameMode::End;
+    }
+    fn menu(&mut self, ctx: &mut BTerm) {
+        ctx.cls();
+        ctx.print_centered(5, "Welcome to Flappy Dragon");
+        ctx.print_centered(8, "(P) Play Game");
+        ctx.print_centered(9, "(Q) Quit Game");
+        if let Some(key) = ctx.key {
+            match key {
+                VirtualKeyCode::P => self.restart(),
+                VirtualKeyCode::Q => ctx.quitting = true,
+                _ => {}
             }
-            VisitorAction::Refuse => println!("Do not allow {} in!", self.name),
-            VisitorAction::Probation => println!("{} is a probation member", self.name),
+        }
+    }
+    fn restart(&mut self) {
+        self.mode = GameMode::Playing;
+    }
+    fn dead(&mut self, ctx: &mut BTerm) {
+        ctx.cls();
+        ctx.print_centered(5, "You are dead!");
+        ctx.print_centered(8, "(P) Play Again");
+        ctx.print_centered(9, "(Q) Quit Game");
+        if let Some(key) = ctx.key {
+            match key {
+                VirtualKeyCode::P => self.restart(),
+                VirtualKeyCode::Q => ctx.quitting = true,
+                _ => {}
+            }
+        }
+    }
+}
+impl GameState for State {
+    fn tick(&mut self, ctx: &mut BTerm) {
+        match self.mode {
+            GameMode::Menu => self.menu(ctx),
+            GameMode::Playing => self.play(ctx),
+            GameMode::End => self.dead(ctx),
         }
     }
 }
 
-fn what_is_your_name() -> String {
-    let mut your_name: String = String::new();
-    stdin().read_line(&mut your_name).unwrap();
-    your_name.trim().to_string()
+enum GameMode {
+    Menu,
+    Playing,
+    End,
 }
-fn main() {
-    let mut guest_list = vec![
-        Visitor::new("bert", VisitorAction::Accept, 20),
-        Visitor::new("chris", VisitorAction::Refuse, 8),
-        Visitor::new("mario", VisitorAction::Probation, 47),
-        Visitor::new(
-            "mike",
-            VisitorAction::AcceptWithNote {
-                note: "Milk is in the fridge.".to_string(),
-            },
-            9,
-        ),
-    ];
-    loop {
-        println!("Hi, what's your name?");
-        let name = what_is_your_name();
-        let visitor = guest_list.iter().find(|visitor| visitor.name == name);
-        if let Some(it) = visitor {
-            it.greet();
-        } else {
-            if name.is_empty() {
-                break;
-            }
-            println!("Hey, {name} you are new.");
-            guest_list.push(Visitor::new(&name, VisitorAction::Probation, 0));
-        }
-    }
-    println!("Our visitors:");
-    println!("{guest_list:#?}");
+
+fn main() -> BError {
+    let context = BTermBuilder::simple80x50()
+        .with_title("Flappy Dragon")
+        .build()?;
+    main_loop(context, State::new())
 }
