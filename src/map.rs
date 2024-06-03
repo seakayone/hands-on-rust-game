@@ -11,7 +11,7 @@ pub enum TileType {
 }
 
 pub struct Map {
-    tiles: Vec<TileType>,
+    pub tiles: Vec<TileType>,
 }
 
 pub fn map_idx(x: i32, y: i32) -> usize {
@@ -20,18 +20,9 @@ pub fn map_idx(x: i32, y: i32) -> usize {
 
 impl Map {
     pub fn new() -> Self {
-        let mut map = Map {
+        Self {
             tiles: vec![TileType::Floor; NUM_TILES],
-        };
-        for y in 0..SCREEN_HEIGHT {
-            map.tiles[map_idx(0, y)] = TileType::Wall;
-            map.tiles[map_idx(SCREEN_WIDTH - 1, y)] = TileType::Wall;
         }
-        for x in 0..SCREEN_WIDTH {
-            map.tiles[map_idx(x, 0)] = TileType::Wall;
-            map.tiles[map_idx(x, SCREEN_HEIGHT - 1)] = TileType::Wall;
-        }
-        map
     }
     pub fn render(&self, ctx: &mut BTerm) {
         for y in 0..SCREEN_HEIGHT {
