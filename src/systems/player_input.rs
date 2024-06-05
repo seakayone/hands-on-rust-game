@@ -1,6 +1,6 @@
 #![warn(clippy::all, clippy::pedantic)]
 
-use crate::prelude::*;
+use crate::{prelude::*, turn_state};
 
 #[system]
 #[write_component(Point)]
@@ -10,6 +10,7 @@ pub fn player_input(
     #[resource] map: &Map,
     #[resource] key: &Option<VirtualKeyCode>,
     #[resource] camera: &mut Camera,
+    #[resource] turn_state: &mut TurnState,
 ) {
     if let Some(key) = key {
         let delta = match key {
@@ -27,6 +28,7 @@ pub fn player_input(
                 if map.can_enter_tile(destination) {
                     *pos = destination;
                     camera.on_player_move(destination);
+                    *turn_state = TurnState::PlayerTurn;
                 };
             });
         }

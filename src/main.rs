@@ -6,6 +6,7 @@ mod map;
 mod map_builder;
 mod spawners;
 mod systems;
+mod turn_state;
 
 mod prelude {
     pub use bracket_lib::prelude::*;
@@ -22,6 +23,7 @@ mod prelude {
     pub use crate::map_builder::*;
     pub use crate::spawners::*;
     pub use crate::systems::*;
+    pub use crate::turn_state::*;
 }
 
 use prelude::*;
@@ -29,7 +31,9 @@ use prelude::*;
 struct State {
     ecs: World,
     resources: Resources,
-    systems: Schedule,
+    input_system: Schedule,
+    player_system: Schedule,
+    monster_system: Schedule,
 }
 impl State {
     fn new() -> Self {
@@ -39,17 +43,20 @@ impl State {
         let map_builder = MapBuilder::new(&mut rng);
         resources.insert(map_builder.map);
         resources.insert(Camera::new(map_builder.player_start));
+        resources.insert(TurnState::AwaitingInput);
         spawn_player(&mut ecs, map_builder.player_start);
         map_builder
             .rooms
             .iter()
             .skip(1)
-            .map(|r| r.center())
+            .map(bracket_lib::prelude::Rect::center)
             .for_each(|pos| spawn_enemy(&mut ecs, &mut rng, pos));
         Self {
             ecs,
             resources,
-            systems: build_scheduler(),
+            input_system: build_input_scheduler(),
+            player_system: build_player_scheduler(),
+            monster_system: build_monster_scheduler(),
         }
     }
 }
@@ -60,7 +67,18 @@ impl GameState for State {
         ctx.set_active_console(1);
         ctx.cls();
         self.resources.insert(ctx.key);
-        self.systems.execute(&mut self.ecs, &mut self.resources);
+        let current_state = self.resources.get::<TurnState>().unwrap().clone();
+        match current_state {
+            TurnState::AwaitingInput => self
+                .input_system
+                .execute(&mut self.ecs, &mut self.resources),
+            TurnState::PlayerTurn => self
+                .player_system
+                .execute(&mut self.ecs, &mut self.resources),
+            TurnState::MonsterTurn => self
+                .monster_system
+                .execute(&mut self.ecs, &mut self.resources),
+        }
         render_draw_buffer(ctx).expect("Render Error");
     }
 }
