@@ -1,6 +1,6 @@
 #![warn(clippy::all, clippy::pedantic)]
 
-use crate::{camera, prelude::*};
+use crate::prelude::*;
 
 #[system]
 pub fn map_render(#[resource] map: &Map, #[resource] camera: &Camera) {
