@@ -21,8 +21,8 @@ pub fn spawn_enemy(ecs: &mut World, rng: &mut RandomNumberGenerator, pos: Point)
     let (hp, name, glyph) = match rng.range(0, 4) {
         0 => goblin(),
         1 => orc(),
-        2 => ettin(),
-        _ => ogre(),
+        2 => ogre(),
+        _ => ettin(),
     };
     ecs.push((
         Enemy,
@@ -31,12 +31,12 @@ pub fn spawn_enemy(ecs: &mut World, rng: &mut RandomNumberGenerator, pos: Point)
             color: ColorPair::new(WHITE, BLACK),
             glyph,
         },
-        MovingRandomly,
         Health {
             current: hp,
             max: hp,
         },
         Name(name),
+        ChasingPlayer,
     ));
 }
 

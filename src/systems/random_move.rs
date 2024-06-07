@@ -36,6 +36,7 @@ pub fn random_move(ecs: &SubWorld, commands: &mut CommandBuffer) {
                             victim: *victim,
                         },
                     ));
+                    attacked = true;
                 }
             });
 
