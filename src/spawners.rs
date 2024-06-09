@@ -52,3 +52,16 @@ fn ettin() -> (i32, String, FontCharType) {
 fn ogre() -> (i32, String, FontCharType) {
     (4, "Ogre".to_string(), to_cp437('O'))
 }
+
+pub fn spawn_amulet_of_yala(ecs: &mut World, pos: Point) {
+    ecs.push((
+        Item,
+        AmuletOfYala,
+        pos,
+        Render {
+            color: ColorPair::new(WHITE, BLACK),
+            glyph: to_cp437('|'),
+        },
+        Name("Amulet of Yala".to_string()),
+    ));
+}

@@ -51,6 +51,7 @@ impl State {
             .skip(1)
             .map(bracket_lib::prelude::Rect::center)
             .for_each(|pos| spawn_enemy(&mut ecs, &mut rng, pos));
+        spawn_amulet_of_yala(&mut ecs, map_builder.amulet_start);
         Self {
             ecs,
             resources,
@@ -86,22 +87,43 @@ impl State {
         ctx.print_color_centered(9, GREEN, BLACK, "Press 1 to play again.");
 
         if let Some(VirtualKeyCode::Key1) = ctx.key {
-            // (3)
-            self.ecs = World::default(); // (4)
-            self.resources = Resources::default();
-            let mut rng = RandomNumberGenerator::new();
-            let map_builder = MapBuilder::new(&mut rng);
-            spawn_player(&mut self.ecs, map_builder.player_start);
-            map_builder
-                .rooms
-                .iter()
-                .skip(1)
-                .map(bracket_lib::prelude::Rect::center)
-                .for_each(|pos| spawn_enemy(&mut self.ecs, &mut rng, pos));
-            self.resources.insert(map_builder.map);
-            self.resources.insert(Camera::new(map_builder.player_start));
-            self.resources.insert(TurnState::AwaitingInput); // (5)
+            self.reset(ctx);
         }
+    }
+
+    fn victory(&mut self, ctx: &mut BTerm) {
+        ctx.set_active_console(2);
+        ctx.print_color_centered(2, GREEN, BLACK, "Congratulations!");
+        ctx.print_color_centered(
+            4,
+            WHITE,
+            BLACK,
+            "You have put the Amulet of Yala around your neck and",
+        );
+        ctx.print_color_centered(5, WHITE, BLACK, "feel its power course through your veins.");
+        ctx.print_color_centered(6, WHITE, BLACK, "The town is saved, and you are a hero!");
+        ctx.print_color_centered(8, GREEN, BLACK, "Press 1 to play again.");
+        if let Some(VirtualKeyCode::Key1) = ctx.key {
+            self.reset(ctx);
+        }
+    }
+
+    fn reset(&mut self, ctx: &mut BTerm) {
+        self.ecs = World::default(); // (4)
+        self.resources = Resources::default();
+        let mut rng = RandomNumberGenerator::new();
+        let map_builder = MapBuilder::new(&mut rng);
+        spawn_player(&mut self.ecs, map_builder.player_start);
+        map_builder
+            .rooms
+            .iter()
+            .skip(1)
+            .map(bracket_lib::prelude::Rect::center)
+            .for_each(|pos| spawn_enemy(&mut self.ecs, &mut rng, pos));
+        spawn_amulet_of_yala(&mut self.ecs, map_builder.amulet_start);
+        self.resources.insert(map_builder.map);
+        self.resources.insert(Camera::new(map_builder.player_start));
+        self.resources.insert(TurnState::AwaitingInput); // (5)
     }
 }
 
@@ -128,6 +150,7 @@ impl GameState for State {
                 .monster_system
                 .execute(&mut self.ecs, &mut self.resources),
             TurnState::GameOver => self.game_over(ctx),
+            TurnState::Victory => self.victory(ctx),
         }
         render_draw_buffer(ctx).expect("Render Error");
     }
