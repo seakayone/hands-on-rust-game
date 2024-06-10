@@ -18,7 +18,7 @@ pub fn spawn_player(ecs: &mut World, pos: Point) {
     ));
 }
 
-pub fn spawn_enemy(ecs: &mut World, rng: &mut RandomNumberGenerator, pos: Point) {
+pub fn spawn_monster(ecs: &mut World, rng: &mut RandomNumberGenerator, pos: Point) {
     let (hp, name, glyph) = match rng.range(0, 4) {
         0 => goblin(),
         1 => orc(),

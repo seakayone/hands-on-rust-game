@@ -41,16 +41,14 @@ impl State {
         let mut resources = Resources::default();
         let mut rng = RandomNumberGenerator::new();
         let map_builder = MapBuilder::new(&mut rng);
+        spawn_player(&mut ecs, map_builder.player_start);
         resources.insert(map_builder.map);
         resources.insert(Camera::new(map_builder.player_start));
         resources.insert(TurnState::AwaitingInput);
-        spawn_player(&mut ecs, map_builder.player_start);
         map_builder
-            .rooms
+            .monster_spawns
             .iter()
-            .skip(1)
-            .map(bracket_lib::prelude::Rect::center)
-            .for_each(|pos| spawn_enemy(&mut ecs, &mut rng, pos));
+            .for_each(|pos| spawn_monster(&mut ecs, &mut rng, *pos));
         spawn_amulet_of_yala(&mut ecs, map_builder.amulet_start);
         Self {
             ecs,
@@ -115,11 +113,9 @@ impl State {
         let map_builder = MapBuilder::new(&mut rng);
         spawn_player(&mut self.ecs, map_builder.player_start);
         map_builder
-            .rooms
+            .monster_spawns
             .iter()
-            .skip(1)
-            .map(bracket_lib::prelude::Rect::center)
-            .for_each(|pos| spawn_enemy(&mut self.ecs, &mut rng, pos));
+            .for_each(|pos| spawn_monster(&mut self.ecs, &mut rng, *pos));
         spawn_amulet_of_yala(&mut self.ecs, map_builder.amulet_start);
         self.resources.insert(map_builder.map);
         self.resources.insert(Camera::new(map_builder.player_start));
@@ -159,7 +155,7 @@ impl GameState for State {
 fn main() -> BError {
     let context = BTermBuilder::new()
         .with_title("Dungeon Crawler")
-        .with_fps_cap(30.0)
+        .with_fps_cap(60.0)
         .with_dimensions(DISPLAY_WIDTH, DISPLAY_HEIGHT)
         .with_tile_dimensions(32, 32)
         .with_resource_path("resources/")
