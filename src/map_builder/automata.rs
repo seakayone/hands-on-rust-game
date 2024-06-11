@@ -15,7 +15,13 @@ impl MapArchitect for CellularAutomataArchitect {
             amulet_start: Point::zero(),
         };
         self.random_noise_map(rng, &mut mb.map);
-        self.iteration(&mut mb.map);
+        for _ in 0..10 {
+            self.iteration(&mut mb.map);
+        }
+        let start = self.find_start(&mb.map);
+        mb.player_start = start;
+        mb.amulet_start = mb.find_most_distant();
+        mb.monster_spawns = mb.spawn_monsters(&start, rng);
 
         mb
     }
@@ -64,8 +70,16 @@ impl CellularAutomataArchitect {
             .tiles
             .iter()
             .enumerate()
-            .filter(|(_, t)| **t == TileType::Floor);
-
-        center
+            .filter(|(_, t)| **t == TileType::Floor)
+            .map(|(idx, _)| {
+                (
+                    idx,
+                    DistanceAlg::Pythagoras.distance2d(center, map.index_to_point2d(idx)),
+                )
+            })
+            .min_by(|(_, distance), (_, distance2)| distance.partial_cmp(&distance2).unwrap())
+            .map(|(idx, _)| idx)
+            .unwrap();
+        map.index_to_point2d(closest_point)
     }
 }
