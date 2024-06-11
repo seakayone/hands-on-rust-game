@@ -2,11 +2,13 @@
 use automata::CellularAutomataArchitect;
 use empty::EmptyArchitect;
 use rooms::RoomsArchitect;
+use drunkard::DrunkardsWalkArchitect;
 
 use crate::prelude::*;
 use std::usize;
 
 mod automata;
+mod drunkard;
 mod empty;
 mod rooms;
 
@@ -25,10 +27,11 @@ pub struct MapBuilder {
 }
 impl MapBuilder {
     pub fn new(rng: &mut RandomNumberGenerator) -> Self {
-        match rng.range(0, 3) {
+        match rng.range(0, 4) {
             0 => EmptyArchitect {}.new(rng),
             1 => RoomsArchitect {}.new(rng),
             2 => CellularAutomataArchitect {}.new(rng),
+            3 => DrunkardsWalkArchitect {}.new(rng),
             _ => unreachable!(),
         }
     }
