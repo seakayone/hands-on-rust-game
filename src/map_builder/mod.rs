@@ -7,9 +7,12 @@ use rooms::RoomsArchitect;
 use crate::prelude::*;
 use std::usize;
 
+use self::prefab::apply_prefab;
+
 mod automata;
 mod drunkard;
 mod empty;
+mod prefab;
 mod rooms;
 mod themes;
 
@@ -29,13 +32,15 @@ pub struct MapBuilder {
 }
 impl MapBuilder {
     pub fn new(rng: &mut RandomNumberGenerator) -> Self {
-        match rng.range(0, 4) {
+        let mut mb = match rng.range(0, 4) {
             0 => EmptyArchitect {}.new(rng),
             1 => RoomsArchitect {}.new(rng),
             2 => CellularAutomataArchitect {}.new(rng),
             3 => DrunkardsWalkArchitect {}.new(rng),
             _ => unreachable!(),
-        }
+        };
+        apply_prefab(&mut mb, rng);
+        mb
     }
 
     fn fill(&mut self, tile: TileType) {
