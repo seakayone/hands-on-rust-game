@@ -13,6 +13,7 @@ impl MapArchitect for CellularAutomataArchitect {
             monster_spawns: Vec::new(),
             player_start: Point::zero(),
             amulet_start: Point::zero(),
+            theme: super::themes::ForestTheme::new(),
         };
         self.random_noise_map(rng, &mut mb.map);
         for _ in 0..10 {
