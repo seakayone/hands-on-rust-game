@@ -77,6 +77,7 @@ pub fn spawn_healing_potion(ecs: &mut World, pos: Point) {
             color: ColorPair::new(WHITE, BLACK),
             glyph: to_cp437('!'),
         },
+        Name("Healing Potion".to_string())
     ));
 }
 pub fn spawn_dungeon_map(ecs: &mut World, pos: Point) {
