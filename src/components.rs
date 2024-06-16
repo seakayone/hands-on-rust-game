@@ -71,3 +71,11 @@ impl FieldOfView {
         }
     }
 }
+
+// Effects
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct ProvidesHealing(pub i32);
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct ProvidesDungeonMap;

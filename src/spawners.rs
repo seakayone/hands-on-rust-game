@@ -67,3 +67,36 @@ pub fn spawn_amulet_of_yala(ecs: &mut World, pos: Point) {
         Name("Amulet of Yala".to_string()),
     ));
 }
+
+pub fn spawn_healing_potion(ecs: &mut World, pos: Point) {
+    ecs.push((
+        Item,
+        pos,
+        ProvidesHealing(6),
+        Render {
+            color: ColorPair::new(WHITE, BLACK),
+            glyph: to_cp437('!'),
+        },
+    ));
+}
+pub fn spawn_dungeon_map(ecs: &mut World, pos: Point) {
+    ecs.push((
+        Item,
+        pos,
+        ProvidesDungeonMap {},
+        Render {
+            color: ColorPair::new(WHITE, BLACK),
+            glyph: to_cp437('{'),
+        },
+        Name("Scroll of Dungeon Mapping".to_string()),
+    ));
+}
+
+pub fn spawn_entity(ecs: &mut World, rng: &mut RandomNumberGenerator, pos: Point) {
+    let roll = rng.roll_dice(1, 6);
+    match roll {
+        1 => spawn_healing_potion(ecs, pos),
+        2 => spawn_dungeon_map(ecs, pos),
+        _ => spawn_monster(ecs, rng, pos),
+    };
+}
