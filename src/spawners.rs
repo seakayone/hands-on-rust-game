@@ -4,15 +4,15 @@ use crate::prelude::*;
 
 pub fn spawn_player(ecs: &mut World, pos: Point) {
     ecs.push((
-        Player,
+        Player { map_level: 0 },
         pos,
         Render {
             color: ColorPair::new(WHITE, BLACK),
             glyph: to_cp437('@'),
         },
         Health {
-            current: 10,
-            max: 10,
+            current: 170,
+            max: 200,
         },
         FieldOfView::new(8),
     ));
@@ -45,12 +45,15 @@ pub fn spawn_monster(ecs: &mut World, rng: &mut RandomNumberGenerator, pos: Poin
 fn goblin() -> (i32, String, FontCharType) {
     (1, "Goblin".to_string(), to_cp437('g'))
 }
+
 fn orc() -> (i32, String, FontCharType) {
     (2, "Orc".to_string(), to_cp437('o'))
 }
+
 fn ettin() -> (i32, String, FontCharType) {
     (3, "Ettin".to_string(), to_cp437('E'))
 }
+
 fn ogre() -> (i32, String, FontCharType) {
     (4, "Ogre".to_string(), to_cp437('O'))
 }
@@ -80,6 +83,7 @@ pub fn spawn_healing_potion(ecs: &mut World, pos: Point) {
         Name("Healing Potion".to_string())
     ));
 }
+
 pub fn spawn_dungeon_map(ecs: &mut World, pos: Point) {
     ecs.push((
         Item,

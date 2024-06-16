@@ -77,7 +77,7 @@ pub fn player_input(
             .unwrap();
         let mut items = <(Entity, &Item, &Point)>::query();
         items.iter(ecs)
-            .for_each(|(e, i, p)| {
+            .for_each(|(e, _, p)| {
                 if player_pos == p {
                     commands.remove_component::<Point>(*e);
                     commands.add_component(*e, Carried(*player));

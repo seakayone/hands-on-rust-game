@@ -1,5 +1,6 @@
 #![warn(clippy::all, clippy::pedantic)]
 
+use std::fmt::format;
 use crate::prelude::*;
 
 #[system]
@@ -8,6 +9,7 @@ use crate::prelude::*;
 #[read_component(Item)]
 #[read_component(Carried)]
 #[read_component(Name)]
+#[read_component(Point)]
 pub fn hud(ecs: &SubWorld) {
     let mut health_query = <&Health>::query().filter(component::<Player>());
     let player_health = health_query.iter(ecs).nth(0).unwrap();
@@ -29,8 +31,7 @@ pub fn hud(ecs: &SubWorld) {
     );
 
 
-    let player_entity = <(Entity, &Player)>::query().iter(ecs)
-        .find_map(|(entity, _player)| Some(*entity)).unwrap();
+    let player_entity = <(Entity, &Player)>::query().iter(ecs).find_map(|(entity, _player)| Some(*entity)).unwrap();
 
     let mut carried = <(&Item, &Carried, &Name)>::query();
     draw_batch.print(Point::new(3, 2), "K : Item");
@@ -38,10 +39,13 @@ pub fn hud(ecs: &SubWorld) {
     carried.iter(ecs)
         .filter(|(_, carried, _)| carried.0 == player_entity)
         .for_each(|(_, _, name)| {
-        let key_label = if y - 2 < 10 { (y - 2).to_string() } else { " ".to_string() };
-        draw_batch.print(Point::new(3, y), format!("{} : {}", key_label, &name.0));
-        y += 1;
-    });
+            let key_label = if y - 2 < 10 { (y - 2).to_string() } else { " ".to_string() };
+            draw_batch.print(Point::new(3, y), format!("{} : {}", key_label, &name.0));
+            y += 1;
+        });
+
+    let (player_pos, player) = <(&Point, &Player)>::query().iter(ecs).nth(0).unwrap();
+    draw_batch.print_right(Point::new(SCREEN_WIDTH*2,1), format!("Level: {} | Pos: x {}, y {}", player.map_level + 1, player_pos.x, player_pos.y));
 
     draw_batch.submit(10000).expect("Batch error");
 }
