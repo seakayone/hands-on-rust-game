@@ -1,8 +1,7 @@
 #![warn(clippy::all, clippy::pedantic)]
 
-use crate::prelude::*;
-
 use self::templates::Templates;
+use crate::prelude::*;
 
 mod templates;
 
@@ -19,6 +18,7 @@ pub fn spawn_player(ecs: &mut World, pos: Point) {
             max: 200,
         },
         FieldOfView::new(8),
+        Damage(1),
     ));
 }
 

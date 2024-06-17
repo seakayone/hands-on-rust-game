@@ -19,6 +19,7 @@ pub struct Template {
     pub glyph: char,
     pub provides: Option<Vec<(String, i32)>>,
     pub hp: Option<i32>,
+    pub base_damage: Option<i32>,
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq)]
@@ -45,23 +46,20 @@ impl Templates {
         level: usize,
         spawn_points: &[Point],
     ) {
-        let mut available_entities = Vec::new(); // (13)
+        let mut available_entities = Vec::new();
         self.entities
-            .iter() // (14)
-            .filter(|e| e.levels.contains(&level)) // (15)
+            .iter()
+            .filter(|e| e.levels.contains(&level))
             .for_each(|t| {
                 for _ in 0..t.frequency {
-                    // (16)
                     available_entities.push(t);
                 }
             });
 
-        let mut commands = CommandBuffer::new(ecs); // (17)
+        let mut commands = CommandBuffer::new(ecs);
         spawn_points.iter().for_each(|pt| {
-            // (18)
             if let Some(entity) = rng.random_slice_entry(&available_entities) {
-                // (19)
-                self.spawn_entity(pt, entity, &mut commands); // (20)
+                self.spawn_entity(pt, entity, &mut commands);
             }
         });
         commands.flush(ecs);
@@ -69,13 +67,12 @@ impl Templates {
 
     fn spawn_entity(&self, pt: &Point, template: &Template, commands: &mut CommandBuffer) {
         let entity = commands.push((
-            // (21)
-            pt.clone(), // (22)
+            pt.clone(),
             Render {
                 color: ColorPair::new(WHITE, BLACK),
-                glyph: to_cp437(template.glyph), // (23)
+                glyph: to_cp437(template.glyph),
             },
-            Name(template.name.clone()), // (24)
+            Name(template.name.clone()),
         ));
         match template.entity_type {
             EntityType::Item => commands.add_component(entity, Item {}),
@@ -102,6 +99,12 @@ impl Templates {
                         println!("Warning: we don't know how to provide {}", provides);
                     }
                 });
+        }
+        if let (Some(damage)) = template.base_damage {
+            commands.add_component(entity, Damage(damage));
+            if template.entity_type == EntityType::Item {
+                commands.add_component(entity, Weapon {});
+            }
         }
     }
 }

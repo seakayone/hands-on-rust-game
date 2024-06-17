@@ -89,8 +89,8 @@ pub fn player_input(
                     if e.get_component::<Weapon>().is_ok() {
                         <(Entity, &Carried, &Weapon)>::query()
                             .iter(ecs)
-                            .filter(|(_, c, _)| &c.0 == player)
-                            .for_each(|(e, _, _)| commands.remove(*e));
+                            .filter(|(_, c, _)| c.0 == player)
+                            .for_each(|(e, _, _)| commadns.remove(e));
                     }
                 };
             });

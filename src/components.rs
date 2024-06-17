@@ -30,7 +30,6 @@ pub struct MovingRandomly;
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct ChasingPlayer;
 
-
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Health {
     pub current: i32,
@@ -77,7 +76,6 @@ pub struct ProvidesDungeonMap;
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Carried(pub Entity);
 
-
 // Intents
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -97,3 +95,9 @@ pub struct ActivateItem {
     pub used_by: Entity,
     pub item: Entity,
 }
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Damage(pub i32);
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Weapon;
