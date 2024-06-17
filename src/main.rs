@@ -8,21 +8,21 @@ mod camera;
 mod components;
 mod map;
 mod map_builder;
-mod spawners;
+mod spawner;
 mod systems;
 mod turn_state;
 
 mod prelude {
     pub use bracket_lib::prelude::*;
-    pub use legion::*;
     pub use legion::systems::CommandBuffer;
     pub use legion::world::SubWorld;
+    pub use legion::*;
 
     pub use crate::camera::*;
     pub use crate::components::*;
     pub use crate::map::*;
     pub use crate::map_builder::*;
-    pub use crate::spawners::*;
+    pub use crate::spawner::*;
     pub use crate::systems::*;
     pub use crate::turn_state::*;
 
@@ -53,10 +53,7 @@ impl State {
         resources.insert(Camera::new(map_builder.player_start));
         resources.insert(TurnState::AwaitingInput);
         resources.insert(map_builder.theme);
-        map_builder
-            .monster_spawns
-            .iter()
-            .for_each(|pos| spawn_entity(&mut ecs, &mut rng, *pos));
+        spawn_level(&mut ecs, &mut rng, 0, &map_builder.monster_spawns);
         Self {
             ecs,
             resources,
@@ -125,7 +122,9 @@ impl State {
             .iter(&self.ecs)
             .filter(|(_, carry)| carry.0 == player_entity)
             .map(|(e, _)| *e)
-            .for_each(|e| { entities_to_keep.insert(e); });
+            .for_each(|e| {
+                entities_to_keep.insert(e);
+            });
 
         let mut cb = CommandBuffer::new(&self.ecs);
         for e in Entity::query().iter(&self.ecs) {
@@ -143,12 +142,13 @@ impl State {
         let mut map_builder = MapBuilder::new(&mut rng);
         let mut map_level = 0;
         <(&mut Player, &mut Point)>::query()
-            .iter_mut(&mut self.ecs).for_each(|(player, pos)| {
-            player.map_level += 1;
-            map_level = player.map_level;
-            pos.x = map_builder.player_start.x;
-            pos.y = map_builder.player_start.y;
-        });
+            .iter_mut(&mut self.ecs)
+            .for_each(|(player, pos)| {
+                player.map_level += 1;
+                map_level = player.map_level;
+                pos.x = map_builder.player_start.x;
+                pos.y = map_builder.player_start.y;
+            });
         if map_level == 2 {
             println!("Placing amulet {:?}", map_builder.amulet_start);
             spawn_amulet_of_yala(&mut self.ecs, map_builder.amulet_start);
@@ -158,8 +158,12 @@ impl State {
             map_builder.map.tiles[exit_id] = TileType::Exit;
         }
 
-        map_builder.monster_spawns.iter()
-            .for_each(|pos| spawn_entity(&mut self.ecs, &mut rng, *pos));
+        spawn_level(
+            &mut self.ecs,
+            &mut rng,
+            map_level as usize,
+            &map_builder.monster_spawns,
+        );
         self.resources.insert(map_builder.map);
         self.resources.insert(Camera::new(map_builder.player_start));
         self.resources.insert(TurnState::AwaitingInput);
@@ -176,10 +180,7 @@ impl State {
         spawn_player(&mut self.ecs, map_builder.player_start);
         let exit_idx = map_builder.map.point2d_to_index(map_builder.amulet_start);
         map_builder.map.tiles[exit_idx] = TileType::Exit;
-        map_builder
-            .monster_spawns
-            .iter()
-            .for_each(|pos| spawn_entity(&mut self.ecs, &mut rng, *pos));
+        spawn_level(&mut self.ecs, &mut rng, 0, &map_builder.monster_spawns);
         self.resources.insert(map_builder.map);
         self.resources.insert(Camera::new(map_builder.player_start));
         self.resources.insert(TurnState::AwaitingInput);
@@ -211,7 +212,7 @@ impl GameState for State {
                 .execute(&mut self.ecs, &mut self.resources),
             TurnState::GameOver => self.game_over(ctx),
             TurnState::Victory => self.victory(ctx),
-            TurnState::NextLevel => self.advance_level()
+            TurnState::NextLevel => self.advance_level(),
         }
         render_draw_buffer(ctx).expect("Render Error");
     }
@@ -232,5 +233,3 @@ fn main() -> BError {
         .build()?;
     main_loop(context, State::new())
 }
-
-

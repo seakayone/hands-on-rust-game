@@ -12,7 +12,7 @@ pub struct Render {
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Player {
-    pub map_level: u32
+    pub map_level: u32,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -46,6 +46,7 @@ pub struct FieldOfView {
     pub radius: i32,
     pub is_dirty: bool,
 }
+
 impl FieldOfView {
     pub fn new(radius: i32) -> Self {
         Self {
@@ -66,7 +67,9 @@ impl FieldOfView {
 // Effects
 
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub struct ProvidesHealing(pub i32);
+pub struct ProvidesHealing {
+    pub amount: i32,
+}
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct ProvidesDungeonMap;
@@ -90,7 +93,7 @@ pub struct WantsToAttack {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub struct ActivateItem{
+pub struct ActivateItem {
     pub used_by: Entity,
-    pub item: Entity
+    pub item: Entity,
 }

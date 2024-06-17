@@ -1,6 +1,5 @@
 #![warn(clippy::all, clippy::pedantic)]
 
-use std::fmt::format;
 use crate::prelude::*;
 
 #[system]
@@ -45,7 +44,7 @@ pub fn hud(ecs: &SubWorld) {
         });
 
     let (player_pos, player) = <(&Point, &Player)>::query().iter(ecs).nth(0).unwrap();
-    draw_batch.print_right(Point::new(SCREEN_WIDTH*2,1), format!("Level: {} | Pos: x {}, y {}", player.map_level + 1, player_pos.x, player_pos.y));
+    draw_batch.print_right(Point::new(SCREEN_WIDTH * 2, 1), format!("Level: {} | Pos: x {}, y {}", player.map_level + 1, player_pos.x, player_pos.y));
 
     draw_batch.submit(10000).expect("Batch error");
 }

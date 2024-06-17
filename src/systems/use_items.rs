@@ -17,7 +17,7 @@ pub fn use_items(
         let item = ecs.entry_ref(activate.item);
         if let Ok(item) = item {
             if let Ok(healing) = item.get_component::<ProvidesHealing>() {
-                healing_to_apply.push((activate.used_by, healing.0));
+                healing_to_apply.push((activate.used_by, healing.amount));
             }
             if let Ok(_mapper) = item.get_component::<ProvidesDungeonMap>() {
                 map.revealed_tiles.iter_mut().for_each(|t| *t = true);
